@@ -1,0 +1,52 @@
+name: Security Checks
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch: 
+
+jobs:
+  detect-env-files:
+    name: Detect .env files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Scan for .env files
+        run: |
+          echo "Scanning for .env files..."
+          # Find files named .env or starting with .env., excluding node_modules and .git
+          FOUND_FILES=$(find . -type f \( -name ".env" -o -name ".env.*" \) -not -name ".env.template" -not -name ".env.example" -not -path "*/node_modules/*" -not -path "*/.git/*")
+
+          if [ -n "$FOUND_FILES" ]; then
+            echo "::error::Security violation: .env files found in repository!"
+            echo "$FOUND_FILES"
+            exit 1
+          else
+            echo "No .env files found."
+          fi
+
+  detect-secrets:
+    name: Detect hardcoded secrets
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for Gitleaks to scan
+
+      - name: Detect secrets with Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4

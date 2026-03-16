@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+/* Full-width layout with proper content constraints */
+main {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+main > div {
+  width: 100%;
+}
+
+/* Maintain grid sizing while allowing full-width page */
+.grid {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}

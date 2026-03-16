@@ -1,0 +1,64 @@
+name: lms-prod
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: lms_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - lms_net
+    expose:
+      - "3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${DB_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  server:
+    image: ${ACR_LOGIN_SERVER}/server:latest
+    container_name: lms_server
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PORT: 3000
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USERNAME: root
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_DATABASE: ${DB_DATABASE}
+      JWT_SECRET: ${JWT_SECRET}
+      NODE_ENV: production
+      ALLOWED_ORIGIN: ${ALLOWED_ORIGIN}
+    networks:
+      - lms_net
+    expose:
+      - "3000"
+    
+
+  client:
+    image: ${ACR_LOGIN_SERVER}/client:latest
+    container_name: lms_client
+    restart: always
+    depends_on:
+      - server
+    ports:
+      - "80:80"
+    networks:
+      - lms_net
+
+volumes:
+  db_data:
+    driver: local
+
+networks:
+  lms_net:
+    driver: bridge
