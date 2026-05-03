@@ -1,15 +1,11 @@
 
-# ──────────────────────────────────────────────────────────────────────────────
 # Locals — common tags & computed values
-# ──────────────────────────────────────────────────────────────────────────────
 locals {
   # Availability zone derived from the chosen region (uses the "a" AZ by default).
   availability_zone = "${var.aws_region}a"
 }
 
-# ──────────────────────────────────────────────────────────────────────────────
 # 1. VPC
-# ──────────────────────────────────────────────────────────────────────────────
 resource "aws_vpc" "vpc_vm_lms" {
   cidr_block           = var.vpc_cidr
   enable_dns_support   = true
@@ -20,9 +16,7 @@ resource "aws_vpc" "vpc_vm_lms" {
   }
 }
 
-# ──────────────────────────────────────────────────────────────────────────────
 # 2. Internet Gateway (equivalent to Azure's default outbound internet access)
-# ──────────────────────────────────────────────────────────────────────────────
 resource "aws_internet_gateway" "igw_vm_lms" {
   vpc_id = aws_vpc.vpc_vm_lms.id
 
@@ -31,9 +25,7 @@ resource "aws_internet_gateway" "igw_vm_lms" {
   }
 }
 
-# ──────────────────────────────────────────────────────────────────────────────
 # 3. Public Subnet
-# ──────────────────────────────────────────────────────────────────────────────
 resource "aws_subnet" "subnet_vm_lms" {
   vpc_id                  = aws_vpc.vpc_vm_lms.id
   cidr_block              = var.subnet_cidr
@@ -45,9 +37,7 @@ resource "aws_subnet" "subnet_vm_lms" {
   }
 }
 
-# ──────────────────────────────────────────────────────────────────────────────
 # 4. Route Table — routes all outbound traffic through the Internet Gateway
-# ──────────────────────────────────────────────────────────────────────────────
 resource "aws_route_table" "rt_vm_lms" {
   vpc_id = aws_vpc.vpc_vm_lms.id
 
@@ -61,24 +51,20 @@ resource "aws_route_table" "rt_vm_lms" {
   }
 }
 
-# ──────────────────────────────────────────────────────────────────────────────
 # 5. Associate Route Table ↔ Public Subnet
-# ──────────────────────────────────────────────────────────────────────────────
 resource "aws_route_table_association" "rta_vm_lms" {
   subnet_id      = aws_subnet.subnet_vm_lms.id
   route_table_id = aws_route_table.rt_vm_lms.id
 }
 
-# ──────────────────────────────────────────────────────────────────────────────
 # 6. Security Group (equivalent to Azure Network Security Group)
 #    Opens: 22 (SSH), 80 (HTTP), 443 (HTTPS), 3000 (NestJS/FastAPI API)
-# ──────────────────────────────────────────────────────────────────────────────
 resource "aws_security_group" "sg_vm_lms" {
   name        = var.security_group_name
   description = "Allow SSH, HTTP, HTTPS, and application API traffic"
   vpc_id      = aws_vpc.vpc_vm_lms.id
 
-  # ── Inbound ────────────────────────────────────────────────────────────────
+  # Inbound
   ingress {
     description = "SSH"
     from_port   = 22
@@ -111,7 +97,7 @@ resource "aws_security_group" "sg_vm_lms" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # ── Outbound ───────────────────────────────────────────────────────────────
+  # Outbound
   egress {
     description = "Allow all outbound traffic"
     from_port   = 0
@@ -125,10 +111,7 @@ resource "aws_security_group" "sg_vm_lms" {
   }
 }
 
-# ──────────────────────────────────────────────────────────────────────────────
 # 7. AMI Data Source — latest Ubuntu 22.04 LTS (Jammy)
-#    Equivalent to the Canonical Ubuntu image used on Azure.
-# ──────────────────────────────────────────────────────────────────────────────
 data "aws_ami" "ubuntu_22_04" {
   most_recent = true
   owners      = ["099720109477"] # Canonical's official AWS account
@@ -149,9 +132,7 @@ data "aws_ami" "ubuntu_22_04" {
   }
 }
 
-# ──────────────────────────────────────────────────────────────────────────────
-# 8. EC2 Instance (equivalent to Azure Linux Virtual Machine)
-# ──────────────────────────────────────────────────────────────────────────────
+# 8. EC2 Instance
 resource "aws_instance" "linux_vm_lms" {
   ami                    = data.aws_ami.ubuntu_22_04.id
   instance_type          = var.instance_type

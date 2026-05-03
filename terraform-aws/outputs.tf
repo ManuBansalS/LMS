@@ -1,7 +1,3 @@
-# ──────────────────────────────────────────────────────────────────────────────
-# EC2 Instance Outputs
-# ──────────────────────────────────────────────────────────────────────────────
-
 output "vm_public_ip" {
   description = "Public IP of the EC2 instance. Use this as VM_HOST in your GitHub Actions secrets."
   value       = aws_instance.linux_vm_lms.public_ip
@@ -27,9 +23,8 @@ output "ssh_connection_string" {
   value       = "ssh -i <your-key.pem> ${var.admin_username}@${aws_instance.linux_vm_lms.public_ip}"
 }
 
-# ──────────────────────────────────────────────────────────────────────────────
+
 # Networking Outputs
-# ──────────────────────────────────────────────────────────────────────────────
 
 output "vpc_id" {
   description = "ID of the created VPC."
@@ -51,9 +46,7 @@ output "internet_gateway_id" {
   value       = aws_internet_gateway.igw_vm_lms.id
 }
 
-# ──────────────────────────────────────────────────────────────────────────────
 # AMI Output
-# ──────────────────────────────────────────────────────────────────────────────
 
 output "ami_id" {
   description = "Ubuntu 22.04 LTS AMI ID that was resolved and used."

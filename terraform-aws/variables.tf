@@ -1,8 +1,4 @@
 
-# ──────────────────────────────────────────────────────────────────────────────
-# Provider / Region
-# ──────────────────────────────────────────────────────────────────────────────
-
 variable "aws_region" {
   description = "AWS region to deploy resources in."
   type        = string
@@ -20,9 +16,8 @@ variable "aws_profile" {
   default     = ""
 }
 
-# ──────────────────────────────────────────────────────────────────────────────
+
 # Global Tags
-# ──────────────────────────────────────────────────────────────────────────────
 
 variable "project" {
   description = "Short project identifier used in resource names and tags."
@@ -47,9 +42,8 @@ variable "owner" {
   default     = "group14"
 }
 
-# ──────────────────────────────────────────────────────────────────────────────
+
 # Networking
-# ──────────────────────────────────────────────────────────────────────────────
 
 variable "vpc_name" {
   description = "Name tag applied to the VPC."
@@ -97,14 +91,13 @@ variable "route_table_name" {
   default     = "rt-vm-lms"
 }
 
-# ──────────────────────────────────────────────────────────────────────────────
+
 # Security Group
-# ──────────────────────────────────────────────────────────────────────────────
 
 variable "security_group_name" {
   description = "Name applied to the EC2 security group."
   type        = string
-  default     = "sg-vm-lms"
+  default     = "sec-grp-vm-lms"
 }
 
 variable "allowed_ssh_cidrs" {
@@ -113,9 +106,8 @@ variable "allowed_ssh_cidrs" {
   default     = ["0.0.0.0/0"]
 }
 
-# ──────────────────────────────────────────────────────────────────────────────
+
 # EC2 Instance
-# ──────────────────────────────────────────────────────────────────────────────
 
 variable "vm_name" {
   description = "Name tag applied to the EC2 instance."

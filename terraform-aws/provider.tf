@@ -15,7 +15,7 @@ terraform {
     key            = "lms/terraform.tfstate"
     region         = "us-east-1"
     encrypt        = true
-    dynamodb_table = "group14-tfstate-lock"          # Optional — enables state locking
+    use_lockfile   = true
   }
 }
 
