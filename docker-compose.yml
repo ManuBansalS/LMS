@@ -22,7 +22,7 @@ services:
       start_period: 30s
 
   server:
-    image: ${ACR_LOGIN_SERVER}/server:latest
+    image: ${AWS_ECR_REGISTRY}/server:latest
     container_name: lms_server
     restart: always
     depends_on:
@@ -45,7 +45,7 @@ services:
     
 
   client:
-    image: ${ACR_LOGIN_SERVER}/client:latest
+    image: ${AWS_ECR_REGISTRY}/client:latest
     container_name: lms_client
     restart: always
     depends_on:

@@ -1,4 +1,4 @@
-name: CD - Build and Push to ACR
+name: CD - Build and Push to AWS ECR
 
 on:
   push:
@@ -15,12 +15,16 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Log in to Azure Container Registry
-        uses: docker/login-action@v3
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          registry: ${{ secrets.AZ_ACR_LOGIN_SERVER }}
-          username: ${{ secrets.AZ_ACR_CLIENT_ID }}
-          password: ${{ secrets.AZ_ACR_CLIENT_SECRET }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build and push Client
         uses: docker/build-push-action@v5
@@ -29,9 +33,9 @@ jobs:
           file: ./client/Dockerfile
           push: true
           tags: |
-            ${{ secrets.AZ_ACR_LOGIN_SERVER }}/client:latest
-            ${{ secrets.AZ_ACR_LOGIN_SERVER }}/client:${{ github.sha }}
-            ${{ secrets.AZ_ACR_LOGIN_SERVER }}/client:${{ github.run_number }}
+            ${{ steps.login-ecr.outputs.registry }}/client:latest
+            ${{ steps.login-ecr.outputs.registry }}/client:${{ github.sha }}
+            ${{ steps.login-ecr.outputs.registry }}/client:${{ github.run_number }}
 
       - name: Build and push Server
         uses: docker/build-push-action@v5
@@ -40,9 +44,9 @@ jobs:
           file: ./server/Dockerfile
           push: true
           tags: |
-            ${{ secrets.AZ_ACR_LOGIN_SERVER }}/server:latest
-            ${{ secrets.AZ_ACR_LOGIN_SERVER }}/server:${{ github.sha }}
-            ${{ secrets.AZ_ACR_LOGIN_SERVER }}/server:${{ github.run_number }}
+            ${{ steps.login-ecr.outputs.registry }}/server:latest
+            ${{ steps.login-ecr.outputs.registry }}/server:${{ github.sha }}
+            ${{ steps.login-ecr.outputs.registry }}/server:${{ github.run_number }}
 
       - name: Deploy to VM
         uses: appleboy/ssh-action@v0.1.7
@@ -51,10 +55,11 @@ jobs:
           username: ${{ secrets.VM_USERNAME }}
           password: ${{ secrets.VM_PASSWORD }}
           script: |
-            docker login ${{ secrets.AZ_ACR_LOGIN_SERVER }} \
-              --username ${{ secrets.AZ_ACR_CLIENT_ID }} \
-              --password ${{ secrets.AZ_ACR_CLIENT_SECRET }}  
+            aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+            aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ECR_REGISTRY }}
             cd /home/${{ secrets.VM_USERNAME }}/lms
+            export AWS_ECR_REGISTRY=${{ secrets.AWS_ECR_REGISTRY }}
             docker compose pull
             docker compose up -d
             docker image prune -f
