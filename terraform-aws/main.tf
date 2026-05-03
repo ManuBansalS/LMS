@@ -154,3 +154,15 @@ resource "aws_instance" "linux_vm_lms" {
     Name = var.vm_name
   }
 }
+
+# 9. Elastic IP (Permanent Public IP)
+resource "aws_eip" "eip_vm_lms" {
+  instance = aws_instance.linux_vm_lms.id
+  domain   = "vpc"
+
+  tags = {
+    Name        = "eip-vm-lms"
+    Environment = var.environment
+    Project     = var.project
+  }
+}
