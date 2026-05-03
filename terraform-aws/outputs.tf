@@ -1,6 +1,6 @@
 output "vm_public_ip" {
-  description = "Public IP of the EC2 instance. Use this as VM_HOST in your GitHub Actions secrets."
-  value       = aws_instance.linux_vm_lms.public_ip
+  description = "Permanent Elastic IP of the EC2 instance. Use this as VM_HOST in your GitHub Actions secrets."
+  value       = aws_eip.eip_vm_lms.public_ip
 }
 
 output "vm_private_ip" {
@@ -19,8 +19,8 @@ output "vm_availability_zone" {
 }
 
 output "ssh_connection_string" {
-  description = "Ready-to-use SSH command to connect to the instance."
-  value       = "ssh -i <your-key.pem> ${var.admin_username}@${aws_instance.linux_vm_lms.public_ip}"
+  description = "Convenience string for connecting via SSH."
+  value       = "ssh -i <your-key.pem> ${var.admin_username}@${aws_eip.eip_vm_lms.public_ip}"
 }
 
 
