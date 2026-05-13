@@ -11,16 +11,16 @@ terraform {
   # Remote state stored in S3 (equivalent to Azure Blob Storage backend).
   # Create the S3 bucket and DynamoDB table before running `terraform init`.
   backend "s3" {
-    bucket         = "group14-tfstate-storage-aws"  # Must be globally unique
-    key            = "lms/terraform.tfstate"
-    region         = "us-east-1"
-    encrypt        = true
-    use_lockfile   = true
+    bucket       = "group14-tfstate-storage-aws" # Must be globally unique
+    key          = "lms/terraform.tfstate"
+    region       = "us-east-1"
+    encrypt      = true
+    use_lockfile = true
   }
 }
 
 provider "aws" {
-  region  = var.aws_region
+  region = var.aws_region
 
   # Uses a named CLI profile when set; falls back to env-var / instance-role auth when empty.
   profile = var.aws_profile != "" ? var.aws_profile : null

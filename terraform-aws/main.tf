@@ -140,6 +140,45 @@ resource "aws_instance" "linux_vm_lms" {
   vpc_security_group_ids = [aws_security_group.sg_vm_lms.id]
   key_name               = var.key_name
 
+  associate_public_ip_address = true
+
+  user_data = <<-EOF
+#!/bin/bash
+
+apt update -y
+
+apt install -y ca-certificates curl gnupg lsb-release git awscli
+
+install -m 0755 -d /etc/apt/keyrings
+
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
+gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+chmod a+r /etc/apt/keyrings/docker.gpg
+
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+  https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+  tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+apt update -y
+
+apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+systemctl enable docker
+systemctl start docker
+
+usermod -aG docker ubuntu
+
+cd /home/ubuntu
+
+git clone https://github.com/ManuBansalS/LMS.git
+
+chown -R ubuntu:ubuntu /home/ubuntu/LMS
+
+EOF
+
   root_block_device {
     volume_size           = var.volume_size
     volume_type           = var.volume_type
