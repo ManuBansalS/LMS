@@ -47,7 +47,7 @@ Create a new user account.
 ```json
 {
   "message": "User registered successfully",
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token": "<JWT_TOKEN>",
   "user": {
     "id": "uuid",
     "username": "john_doe",
@@ -73,7 +73,7 @@ Authenticate and receive JWT token.
 **Response:** `200 OK`
 ```json
 {
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token": "<JWT_TOKEN",
   "user": {
     "id": "uuid",
     "username": "john_doe",
